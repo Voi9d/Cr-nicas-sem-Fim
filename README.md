@@ -139,20 +139,9 @@ A versão 0.1 do **Crônicas Sem Fim** contém as seguintes funcionalidades:
 - **Personalização da experiência:** opções para ajustar o tamanho das respostas da narradora, a velocidade da narração e o tamanho do texto.
 - **Execução local:** o jogo pode utilizar Ollama local sem chave de API ou a API Gemini com chave configurada no servidor.
 
-### Status do projeto
+## Versão 0.2 — Funcionalidades
 
-A versão 0.1 representa a primeira etapa do projeto, com o sistema básico de RPG, a narração por inteligência artificial e o gerenciamento de aventuras e salvamentos implementados. O projeto poderá receber melhorias, correções e novas funcionalidades em versões futuras.
+A versão 0.1 do **Crônicas Sem Fim** contém as seguintes funcionalidades:
 
-## Funcionalidades planejadas para versões futuras
-
-O **Crônicas Sem Fim** está em desenvolvimento, e algumas das ideias para as próximas versões incluem:
-
-- **Sistema de fichas de personagem:** permitir que o jogador crie uma ficha antes de iniciar uma aventura, definindo atributos, habilidades, características e outras informações relevantes para o personagem.
-- **Sistema de atributos e habilidades:** utilizar os valores da ficha para influenciar as ações, os testes e as possibilidades do personagem durante a história.
-- **Rolagem de dados:** implementar dados virtuais, como o clássico D20, para determinar o resultado de ações, testes de habilidade, combates e situações de risco.
-- **Sistema de testes e dificuldades:** combinar os atributos do personagem, as rolagens de dados e a dificuldade de cada situação para determinar o sucesso ou o fracasso de uma ação.
-- **Combate mais desenvolvido:** aprimorar as mecânicas de combate, considerando atributos, equipamentos, ferimentos e resultados das rolagens.
-- **Inventário e equipamentos:** expandir o gerenciamento de itens, armas, armaduras e outros recursos que possam influenciar a aventura.
-- **Maior integração entre as mecânicas e a IA:** fazer com que a narradora considere melhor as fichas, os atributos, as rolagens e as regras do jogo ao descrever as consequências das ações.
-
-Essas funcionalidades representam ideias para o desenvolvimento futuro do projeto e poderão ser modificadas, ampliadas ou reorganizadas conforme a evolução do jogo.
+- Adaptado e colocado uma API do Gemini, para cada jogador poder escolher entre utilizar da Llama como ia principal, ou uma API do Gemini.
+OBS: Você deve ter sua própria API para isso, e então colocar no .env (crie um na pasta, o .env.example apenas copie e cole no .env que você criar).

@@ -1,0 +1,244 @@
+.menu {
+  min-height: 100dvh;
+  max-width: 62rem;
+  margin: 0 auto;
+  padding: 3rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.tela[hidden] { display: none; }
+
+/* ---------- tela principal ---------- */
+
+.titulo-grande {
+  margin: 0;
+  font-family: var(--fonte-titulo);
+  font-weight: 400;
+  font-size: clamp(3.5rem, 13vw, 9rem);
+  line-height: 0.95;
+  letter-spacing: -0.01em;
+}
+
+.titulo-grande span { display: block; }
+
+.fio {
+  height: 2px;
+  margin: 2rem 0 1.25rem;
+  background: linear-gradient(90deg, var(--acento), transparent);
+  transform-origin: left;
+}
+
+.chamada {
+  margin: 0 0 2.5rem;
+  max-width: 40ch;
+  font-style: italic;
+  color: var(--suave);
+}
+
+.lista-menu {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.25rem;
+  justify-items: start;
+}
+
+.item {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0;
+  font-family: var(--fonte-titulo);
+  font-size: clamp(1.75rem, 4vw, 2.4rem);
+  line-height: 1.2;
+  color: var(--suave);
+  background: none;
+  border: 0;
+  cursor: pointer;
+  text-decoration: none;
+  transition: color 0.15s, padding-left 0.15s;
+}
+
+.item::before {
+  content: "";
+  position: absolute;
+  left: 0.15rem;
+  width: 0.55rem;
+  height: 0.55rem;
+  background: var(--acento);
+  transform: rotate(45deg);
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.item:hover,
+.item:focus-visible {
+  color: var(--texto);
+  padding-left: 1.6rem;
+}
+
+.item:hover::before,
+.item:focus-visible::before { opacity: 1; }
+
+.item:focus-visible {
+  outline: none;
+  text-decoration: underline;
+  text-decoration-color: var(--acento);
+  text-underline-offset: 0.3em;
+}
+
+/* ---------- Opções e Créditos ---------- */
+
+.titulo-tela {
+  margin: 0 0 2rem;
+  font-family: var(--fonte-titulo);
+  font-weight: 400;
+  font-size: clamp(2.25rem, 6vw, 3.5rem);
+  line-height: 1.1;
+}
+
+.opcoes-form {
+  display: grid;
+  gap: 1.75rem;
+  max-width: 40rem;
+}
+
+.campo {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.campo label,
+.campo legend {
+  display: block;
+  padding: 0;
+  margin-bottom: 0.5rem;
+  font-size: 1.05rem;
+}
+
+.campo input[type="text"] {
+  width: 100%;
+  padding: 0.7rem 1rem;
+  font: inherit;
+  font-size: 1.05rem;
+  color: var(--texto);
+  background: var(--fundo);
+  border: 1px solid var(--linha);
+  border-radius: 4px;
+}
+
+.campo input[type="text"]::placeholder {
+  color: var(--suave);
+  font-style: italic;
+}
+
+.dica {
+  margin: 0.5rem 0 0;
+  font-size: 0.95rem;
+  color: var(--suave);
+}
+
+.seg {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.seg-op { position: relative; }
+
+.seg-op input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.seg-op span {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  background: var(--superficie);
+  border: 1px solid var(--linha);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.seg-op:hover span { border-color: var(--suave); }
+
+.seg-op input:checked + span {
+  color: var(--acento);
+  border-color: var(--acento);
+  background: rgba(224, 169, 74, 0.12);
+}
+
+.seg-op input:focus-visible + span {
+  outline: 2px solid var(--acento);
+  outline-offset: 2px;
+}
+
+.acoes-tela {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 2.5rem;
+}
+
+.nota {
+  font-size: 0.95rem;
+  font-style: italic;
+  color: var(--suave);
+}
+
+.creditos {
+  margin: 0 0 2rem;
+  max-width: 40rem;
+  display: grid;
+  gap: 1.25rem;
+}
+
+.creditos dt {
+  font-size: 0.95rem;
+  color: var(--suave);
+}
+
+.creditos dd {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.agradecimento {
+  margin: 0;
+  font-family: var(--fonte-titulo);
+  font-size: 1.6rem;
+}
+
+/* ---------- entrada do menu: uma única sequência ao abrir a página ---------- */
+
+.entrando .titulo-grande { animation: surgir 1.2s ease both; }
+.entrando .fio { animation: tracar 0.9s 0.7s ease both; }
+.entrando .chamada,
+.entrando .lista-menu { animation: surgir 0.8s 1.2s ease both; }
+
+@keyframes surgir {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes tracar {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .entrando * { animation: none !important; }
+  .item, .seg-op span { transition: none; }
+}
+
+@media (max-width: 760px) {
+  .menu { padding: 2rem 1.25rem; }
+}

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Crônicas Sem Fim</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=Spectral:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="menu.css">
+  <script src="opcoes.js"></script>
+</head>
+<body class="entrando">
+  <main class="menu">
+
+    <!-- Tela principal -->
+    <section id="tela-menu" class="tela" aria-labelledby="titulo">
+      <h1 id="titulo" class="titulo-grande"><span>Crônicas</span><span>Sem Fim</span></h1>
+      <div class="fio" aria-hidden="true"></div>
+      <p class="chamada">Uma história infinita, escrita a cada escolha sua.</p>
+      <nav aria-label="Menu principal">
+        <ul class="lista-menu" id="lista-menu">
+          <li><button class="item" id="btn-iniciar" type="button">Iniciar</button></li>
+          <li><a class="item" id="btn-aventuras" href="aventuras.html">Selecionar Aventura</a></li>
+          <li><button class="item" id="btn-opcoes" type="button">Opções</button></li>
+          <li><button class="item" id="btn-creditos" type="button">Créditos</button></li>
+        </ul>
+      </nav>
+    </section>
+
+    <!-- Criar nova aventura -->
+    <section id="tela-nova" class="tela" aria-labelledby="t-nova" hidden>
+      <h2 id="t-nova" class="titulo-tela">Nova aventura</h2>
+      <form id="form-nova" class="opcoes-form" autocomplete="off">
+        <div class="campo">
+          <label for="nova-nome">Nome da aventura (opcional)</label>
+          <input id="nova-nome" name="nomeAventura" type="text" maxlength="60" placeholder="Ex.: O reino das cinzas">
+          <p class="dica">Se deixar em branco, o jogo cria um nome usando o tema escolhido.</p>
+        </div>
+        <fieldset class="campo">
+          <legend>Escolha o tema da história</legend>
+          <div class="seg">
+            <label class="seg-op"><input type="radio" name="genero" value="fantasia" checked><span>Fantasia</span></label>
+            <label class="seg-op"><input type="radio" name="genero" value="terror"><span>Terror</span></label>
+            <label class="seg-op"><input type="radio" name="genero" value="scifi"><span>Ficção científica</span></label>
+            <label class="seg-op"><input type="radio" name="genero" value="misterio"><span>Mistério</span></label>
+          </div>
+          <p class="dica">O tema fica associado a esta aventura e não altera as outras histórias salvas.</p>
+        </fieldset>
+        <div class="campo">
+          <label for="nova-personagem">Nome do personagem (opcional)</label>
+          <input id="nova-personagem" name="personagem" type="text" maxlength="30" placeholder="Como a narradora vai chamar você">
+        </div>
+      </form>
+      <div class="acoes-tela">
+        <button id="criar-aventura" class="btn" type="button">Criar história</button>
+        <button id="voltar-nova" class="btn-sec" type="button">Voltar</button>
+      </div>
+    </section>
+
+    <!-- Opções -->
+    <section id="tela-opcoes" class="tela" aria-labelledby="t-opcoes" hidden>
+      <h2 id="t-opcoes" class="titulo-tela">Opções</h2>
+
+      <form id="form-opcoes" class="opcoes-form" autocomplete="off">
+
+        <div class="campo">
+          <label for="op-nome">Nome do personagem</label>
+          <input id="op-nome" name="nome" type="text" maxlength="30" placeholder="Como a narradora vai chamar você">
+          <p class="dica">Aparece dentro da história. Em branco, a narradora usa “você”.</p>
+        </div>
+
+
+
+        <fieldset class="campo">
+          <legend>Tamanho das respostas</legend>
+          <div class="seg">
+            <label class="seg-op"><input type="radio" name="respostas" value="curtas"><span>Curtas</span></label>
+            <label class="seg-op"><input type="radio" name="respostas" value="medias"><span>Médias</span></label>
+            <label class="seg-op"><input type="radio" name="respostas" value="longas"><span>Longas</span></label>
+          </div>
+          <p class="dica">Quanto a narradora escreve a cada jogada. Respostas longas demoram mais.</p>
+        </fieldset>
+
+        <fieldset class="campo">
+          <legend>Velocidade da narração</legend>
+          <div class="seg">
+            <label class="seg-op"><input type="radio" name="velocidade" value="instantanea"><span>Instantânea</span></label>
+            <label class="seg-op"><input type="radio" name="velocidade" value="rapida"><span>Rápida</span></label>
+            <label class="seg-op"><input type="radio" name="velocidade" value="normal"><span>Normal</span></label>
+            <label class="seg-op"><input type="radio" name="velocidade" value="lenta"><span>Lenta</span></label>
+          </div>
+          <p class="dica">O texto aparece letra por letra. No jogo, toque na história para mostrar tudo de uma vez.</p>
+        </fieldset>
+
+        <fieldset class="campo">
+          <legend>Tamanho do texto</legend>
+          <div class="seg">
+            <label class="seg-op"><input type="radio" name="texto" value="pequeno"><span>Pequeno</span></label>
+            <label class="seg-op"><input type="radio" name="texto" value="medio"><span>Médio</span></label>
+            <label class="seg-op"><input type="radio" name="texto" value="grande"><span>Grande</span></label>
+          </div>
+        </fieldset>
+
+      </form>
+
+      <div class="acoes-tela">
+        <button id="voltar-opcoes" class="btn" type="button">Voltar</button>
+        <button id="restaurar" class="btn-sec" type="button">Restaurar padrão</button>
+        <span class="nota">As mudanças são salvas automaticamente.</span>
+      </div>
+    </section>
+
+    <!-- Créditos -->
+    <section id="tela-creditos" class="tela" aria-labelledby="t-creditos" hidden>
+      <h2 id="t-creditos" class="titulo-tela">Créditos</h2>
+
+      <dl class="creditos">
+        <div><dt>Criação e design</dt><dd>Seu nome aqui</dd></div>
+        <div><dt>Narradora</dt><dd>Llama, modelo de linguagem da Meta, rodando no seu computador com o Ollama</dd></div>
+        <div><dt>Tipografia</dt><dd>IM Fell English, de Igino Marini, e Spectral, da Production Type, ambas pelo Google Fonts</dd></div>
+        <div><dt>Feito com</dt><dd>HTML, CSS e JavaScript</dd></div>
+        <div><dt>Versão</dt><dd>0.1</dd></div>
+      </dl>
+
+      <p class="agradecimento">Obrigado por jogar.</p>
+
+      <div class="acoes-tela">
+        <button id="voltar-creditos" class="btn" type="button">Voltar</button>
+      </div>
+    </section>
+
+  </main>
+  <script src="menu.js"></script>
+</body>
+</html>

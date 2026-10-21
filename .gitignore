@@ -1,0 +1,5 @@
+node_modules
+.env
+
+# Progresso pessoal da aventura
+partida-salva.json

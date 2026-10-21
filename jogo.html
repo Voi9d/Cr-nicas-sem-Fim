@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Crônicas Sem Fim</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=Spectral:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script src="opcoes.js"></script>
+</head>
+<body>
+  <div class="app">
+
+    <header class="topo">
+      <div>
+        <h1 class="titulo" id="titulo-aventura">Crônicas Sem Fim</h1>
+        <p class="subtitulo">Uma história que ainda não foi escrita. O que você fizer, a narradora conta.</p>
+      </div>
+      <div class="topo-botoes">
+        <a class="btn-sec" href="index.html">Menu</a>
+        <button id="btn-salvar" class="btn-sec" type="button">Salvar ponto</button>
+        <button id="btn-salvamentos" class="btn-sec" type="button">Salvamentos</button>
+        <button id="novo-jogo" class="btn-sec" type="button">Nova aventura</button>
+      </div>
+    </header>
+
+    <main class="palco">
+      <aside class="status" aria-label="Situação do personagem">
+        <dl>
+          <div><dt>Vida</dt><dd id="st-vida">10 / 10</dd></div>
+          <div><dt>Condição</dt><dd id="st-condicao">sem ferimentos relevantes</dd></div>
+          <div><dt>Local</dt><dd id="st-local">Cais da vila</dd></div>
+          <div><dt>Mochila</dt><dd id="st-mochila">vazia</dd></div>
+        </dl>
+      </aside>
+
+      <div class="coluna">
+        <section id="painel-salvamentos" class="painel-salvamentos" hidden>
+          <div class="painel-salvamentos-topo"><h2>Salvamentos manuais</h2><button id="fechar-salvamentos" class="btn-sec" type="button">Fechar</button></div>
+          <p class="dica-salvamento">Carregar um ponto volta a história para aquele momento. Os outros pontos continuam guardados.</p>
+          <div id="lista-salvamentos"></div>
+        </section>
+        <section class="historia" id="historia" aria-live="polite" aria-label="História"></section>
+
+        <div class="acao">
+          <div class="opcoes" id="opcoes"></div>
+          <form id="form-acao" class="livre" autocomplete="off">
+            <input id="campo-acao" type="text" placeholder="Ou escreva o que você faz" aria-label="Escreva sua ação" maxlength="300">
+            <button class="btn" type="submit">Agir</button>
+          </form>
+        </div>
+      </div>
+    </main>
+
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>

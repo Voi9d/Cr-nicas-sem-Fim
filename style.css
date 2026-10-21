@@ -1,0 +1,302 @@
+:root {
+  --fundo: #1B2236;
+  --superficie: #232C45;
+  --linha: #38425F;
+  --texto: #E6E0D2;
+  --suave: #A3A8BC;
+  --acento: #E0A94A;
+  --acento-tinta: #2A1E08;
+  --fonte-titulo: "IM Fell English", Georgia, serif;
+  --fonte-texto: "Spectral", Georgia, serif;
+}
+
+* { box-sizing: border-box; }
+
+html, body { height: 100%; }
+
+body {
+  margin: 0;
+  background: var(--fundo);
+  color: var(--texto);
+  font-family: var(--fonte-texto);
+  font-size: 1.125rem;
+  line-height: 1.7;
+}
+
+:focus-visible {
+  outline: 2px solid var(--acento);
+  outline-offset: 2px;
+}
+
+/* ---------- estrutura ---------- */
+
+.app {
+  height: 100dvh;
+  max-width: 62rem;
+  margin: 0 auto;
+  padding: 0 1.25rem;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.topo {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.5rem 0 1.25rem;
+  border-bottom: 1px solid var(--linha);
+}
+
+.titulo {
+  margin: 0;
+  font-family: var(--fonte-titulo);
+  font-weight: 400;
+  font-size: clamp(2rem, 5vw, 3rem);
+  line-height: 1.1;
+  letter-spacing: 0.01em;
+}
+
+.subtitulo {
+  margin: 0.4rem 0 0;
+  font-style: italic;
+  font-size: 1rem;
+  color: var(--suave);
+}
+
+.palco {
+  display: grid;
+  grid-template-columns: 12rem minmax(0, 1fr);
+  gap: 2.5rem;
+  min-height: 0;
+}
+
+.coluna {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* ---------- status ---------- */
+
+.status {
+  padding-top: 1.5rem;
+}
+
+.status dl { margin: 0; }
+
+.status div {
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--linha);
+}
+
+.status dt {
+  font-size: 0.85rem;
+  color: var(--suave);
+}
+
+.status dd {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+/* ---------- história ---------- */
+
+.historia {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 1.5rem 1rem 1.5rem 0;
+}
+
+.historia p {
+  max-width: 62ch;
+  margin: 0 0 1.1rem;
+}
+
+.narracao.abertura::first-letter {
+  float: left;
+  font-family: var(--fonte-titulo);
+  font-size: 4rem;
+  line-height: 0.8;
+  padding: 0.35rem 0.6rem 0 0;
+  color: var(--acento);
+}
+
+.jogador {
+  margin-left: 1.25rem !important;
+  padding-left: 1rem;
+  border-left: 2px solid var(--acento);
+  font-style: italic;
+  color: var(--suave);
+}
+
+.aguarde {
+  font-style: italic;
+  color: var(--suave);
+  animation: pulsar 1.6s ease-in-out infinite;
+}
+
+.aguarde.erro {
+  animation: none;
+  color: var(--acento);
+}
+
+@keyframes pulsar {
+  0%, 100% { opacity: 0.45; }
+  50% { opacity: 1; }
+}
+
+/* ---------- ações ---------- */
+
+.acao {
+  padding: 1rem 0 1.5rem;
+  border-top: 1px solid var(--linha);
+}
+
+.opcoes {
+  display: grid;
+  gap: 0.5rem;
+  margin-bottom: 0.9rem;
+}
+
+.opcao {
+  width: 100%;
+  padding: 0.7rem 1rem;
+  text-align: left;
+  font: inherit;
+  font-size: 1.05rem;
+  line-height: 1.4;
+  color: var(--texto);
+  background: var(--superficie);
+  border: 1px solid var(--linha);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.opcao:hover:not(:disabled) {
+  border-color: var(--acento);
+  background: #2A3552;
+}
+
+.livre {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.livre input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.7rem 1rem;
+  font: inherit;
+  font-size: 1.05rem;
+  color: var(--texto);
+  background: var(--fundo);
+  border: 1px solid var(--linha);
+  border-radius: 4px;
+}
+
+.livre input::placeholder { color: var(--suave); font-style: italic; }
+
+.btn, .btn-sec {
+  font: inherit;
+  font-size: 1rem;
+  padding: 0.7rem 1.4rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn {
+  font-weight: 600;
+  color: var(--acento-tinta);
+  background: var(--acento);
+  border: 1px solid var(--acento);
+}
+
+.btn-sec {
+  color: var(--suave);
+  background: transparent;
+  border: 1px solid var(--linha);
+  white-space: nowrap;
+}
+
+.btn-sec:hover { color: var(--texto); border-color: var(--suave); }
+
+button:disabled, input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ---------- celular ---------- */
+
+@media (max-width: 760px) {
+  body { font-size: 1.05rem; }
+
+  .app { padding: 0 1rem; }
+
+  .subtitulo { display: none; }
+
+  .topo { padding: 1rem 0; align-items: center; }
+
+  .palco {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+    gap: 0;
+  }
+
+  .status { padding-top: 0.5rem; border-bottom: 1px solid var(--linha); }
+
+  .status dl {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1.5rem;
+  }
+
+  .status div { border-bottom: none; padding: 0.3rem 0; }
+
+  .historia { padding-right: 0; }
+
+  .narracao.abertura::first-letter { font-size: 3.4rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aguarde { animation: none; }
+  .opcao { transition: none; }
+}
+
+/* ---------- opções do jogador (tamanho do texto) ---------- */
+
+html[data-texto="pequeno"] { font-size: 14px; }
+html[data-texto="medio"] { font-size: 16px; }
+html[data-texto="grande"] { font-size: 19px; }
+
+.topo-botoes {
+  display: flex;
+  gap: 0.5rem;
+}
+
+a.btn-sec {
+  display: inline-block;
+  text-decoration: none;
+}
+
+.fim {
+  font-style: italic;
+  color: var(--acento);
+}
+
+/* ---------- salvamentos manuais ---------- */
+.topo-botoes { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:.45rem; }
+.painel-salvamentos { padding:1rem; margin:1rem 0; border:1px solid var(--linha); background:var(--superficie); border-radius:5px; max-height:42vh; overflow:auto; }
+.painel-salvamentos[hidden] { display:none; }
+.painel-salvamentos-topo { display:flex; align-items:center; justify-content:space-between; gap:1rem; }
+.painel-salvamentos h2 { margin:0; font-family:var(--fonte-titulo); font-size:1.6rem; font-weight:400; }
+.dica-salvamento { color:var(--suave); font-size:.95rem; margin:.35rem 0 1rem; }
+.salvamento-item { display:flex; justify-content:space-between; align-items:center; gap:.75rem; padding:.75rem 0; border-top:1px solid var(--linha); }
+.salvamento-item strong { display:block; }
+.salvamento-item small { color:var(--suave); }
+.salvamento-acoes { display:flex; flex-wrap:wrap; gap:.4rem; }
+.salvamento-acoes button { padding:.4rem .7rem; font-size:.9rem; }
+@media(max-width:760px) { .topo { flex-direction:column; } .topo-botoes { justify-content:flex-start; } .palco { grid-template-columns:1fr; grid-template-rows:auto minmax(0,1fr); gap:.5rem; } .status { padding-top:.5rem; } .status dl { display:flex; gap:1rem; flex-wrap:wrap; } .status div { min-width:5rem; } .salvamento-item { align-items:flex-start; flex-direction:column; } }

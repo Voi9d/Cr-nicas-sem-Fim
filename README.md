@@ -2,19 +2,16 @@
 
 RPG de texto em que uma IA narra a história e escreve as consequências de cada ação.
 
-A narradora é um modelo Llama que roda no seu próprio computador, com o Ollama. Não precisa de internet para jogar nem de chave de API.
+A narradora pode usar um modelo local pelo Ollama ou a API do Gemini, do Google. Com Ollama, o jogo pode funcionar sem internet; com Gemini, é necessária conexão e uma chave de API.
 
 ## Como rodar
 
 1. Instale o Node.js (versão 18 ou mais nova): https://nodejs.org
-2. Instale o Ollama: https://ollama.com e deixe o aplicativo aberto.
-3. Baixe o modelo (uma vez só). No terminal, execute:
-
-```bash
-ollama pull llama3.1
-```
-
-4. Nesta pasta, instale as dependências e inicie o servidor:
+2. Escolha o provedor de IA:
+   - Para usar Ollama, instale-o em https://ollama.com e baixe um modelo com `ollama pull llama3.1`.
+   - Para usar Gemini, siga a seção **Como configurar a API do Gemini** abaixo para criar uma chave.
+3. Nesta pasta, opcionalmente copie `.env.example` para `.env` e escolha o provedor.
+4. Instale as dependências e inicie o servidor:
 
 ```bash
 npm install
@@ -23,22 +20,58 @@ npm start
 
 5. Abra http://localhost:3000 no navegador.
 
-Depois da instalação inicial, normalmente basta deixar o Ollama aberto e executar `npm start` para jogar novamente.
+Depois da configuração inicial, normalmente basta executar `npm start`. Se estiver usando Ollama, ele precisa estar aberto; se estiver usando Gemini, o computador precisa de internet e a chave deve estar configurada.
 
 Para encerrar o servidor, pressione `Ctrl + C` no terminal em que ele está rodando.
 
-## Qual modelo usar
+## Escolha do provedor de IA
 
-- `llama3.1` (8B, cerca de 4,7 GB): o padrão. Recomenda-se um computador com aproximadamente 8 GB de RAM livres ou uma placa de vídeo.
-- `llama3.2` (3B, cerca de 2 GB): para computadores mais fracos. É mais rápido, mas pode apresentar narrações piores e erros no formato das respostas.
+O projeto aceita dois provedores, configurados pelo arquivo `.env`:
 
-Para trocar o modelo, copie o arquivo `.env.example` para `.env` e defina:
+- **Ollama:** executa a IA no seu computador, sem cobrar por chamada e sem exigir internet depois de baixar o modelo. A velocidade depende do hardware.
+- **Gemini API:** envia as solicitações para os servidores do Google; pode responder mais rápido em alguns computadores, mas depende da internet e está sujeito aos limites de uso do modelo e da conta.
+
+### Como configurar a API do Gemini
+
+1. Acesse o [Google AI Studio](https://aistudio.google.com/app/apikey) com sua conta Google.
+2. Crie uma chave de API (API key). Siga as instruções exibidas pelo Google.
+3. Na pasta principal do projeto, copie `.env.example` e renomeie a cópia para `.env`.
+4. Abra o arquivo `.env` com um editor de texto e configure estas linhas:
 
 ```env
-MODELO=llama3.2
+PROVEDOR_IA=gemini
+GEMINI_API_KEY=COLE_SUA_CHAVE_AQUI
+GEMINI_MODELO=gemini-3.8-flash
 ```
 
-A primeira jogada demora mais, porque o modelo precisa carregar na memória. Sem placa de vídeo, cada resposta pode levar de alguns segundos a mais de um minuto, dependendo do computador.
+5. Salve o arquivo e execute `npm start` no terminal, dentro da pasta do projeto.
+6. Abra http://localhost:3000. Se o servidor já estava rodando, encerre com `Ctrl + C` e inicie novamente para carregar as novas configurações.
+
+**Segurança:** nunca coloque a chave em arquivos JavaScript do navegador, no HTML ou em capturas públicas. A chave deve ficar somente no arquivo `.env`, que já está listado no `.gitignore`; não publique esse arquivo no GitHub nem compartilhe sua chave. Se ela vazar, revogue-a no Google AI Studio e crie outra.
+
+A disponibilidade de uso gratuito, os limites de requisições e os modelos disponíveis podem mudar. Confira as informações atuais no [Google AI Studio](https://aistudio.google.com/) e na [documentação oficial da Gemini API](https://ai.google.dev/gemini-api/docs).
+
+### Voltar para o Ollama
+
+No arquivo `.env`, defina:
+
+```env
+PROVEDOR_IA=ollama
+MODELO=llama3.1
+OLLAMA_URL=http://127.0.0.1:11434
+```
+
+Salve e reinicie o servidor. Para usar outro modelo local, baixe-o com `ollama pull NOME_DO_MODELO` e altere `MODELO`.
+
+### Variáveis disponíveis
+
+- `PROVEDOR_IA`: `ollama` ou `gemini`.
+- `MODELO`: nome do modelo instalado no Ollama.
+- `OLLAMA_URL`: endereço do servidor Ollama, normalmente `http://127.0.0.1:11434`.
+- `CONTEXTO`: contexto do modelo local em tokens.
+- `GEMINI_API_KEY`: chave secreta da API Gemini.
+- `GEMINI_MODELO`: modelo Gemini usado para gerar as respostas.
+- `PORT`: porta do site, por padrão `3000`.
 
 ## Como jogar
 
@@ -76,7 +109,7 @@ O jogo possui salvamento automático e salvamentos manuais.
 
 ## Estrutura do projeto
 
-- `server.js`: servidor do jogo. Gerencia as aventuras, os salvamentos, a comunicação com o Ollama e o histórico das histórias.
+- `server.js`: servidor do jogo. Gerencia as aventuras, os salvamentos, a comunicação com o Ollama ou a API Gemini e o histórico das histórias.
 - `narradora.js`: contém as instruções da narradora, os tamanhos das respostas e o formato de cada jogada. Edite esse arquivo para mudar o estilo da narração.
 - `public/`: contém os arquivos do site, incluindo menu, opções, seleção de aventuras, salvamentos e interface do jogo.
 - `partida-salva.json`: armazena os dados persistidos das aventuras e seus salvamentos.
@@ -86,13 +119,13 @@ O jogo possui salvamento automático e salvamentos manuais.
 - As partidas **não são perdidas ao reiniciar o servidor**, pois ficam registradas no arquivo `partida-salva.json`.
 - Se o arquivo for apagado, substituído ou danificado, os dados salvos poderão ser perdidos. Por isso, mantenha cópias de segurança.
 - O servidor só aceita conexões deste computador por padrão. O jogo não fica automaticamente disponível para outros computadores ou pela internet.
-- O Ollama precisa estar instalado e em execução para que a IA consiga narrar as histórias.
+- O provedor selecionado precisa estar disponível: Ollama instalado e em execução, ou Gemini configurado com chave válida e acesso à internet.
 
 ## Versão 0.1 — Funcionalidades
 
 A versão 0.1 do **Crônicas Sem Fim** contém as seguintes funcionalidades:
 
-- **RPG narrado por IA:** histórias narradas dinamicamente por um modelo Llama executado localmente através do Ollama.
+- **RPG narrado por IA:** histórias narradas dinamicamente por um modelo de IA executado localmente pelo Ollama ou acessado pela API Gemini.
 - **Aventuras com temas diferentes:** possibilidade de iniciar histórias com diferentes temas, como fantasia ou ficção científica.
 - **Aventuras independentes:** cada história possui seu próprio progresso, permitindo alternar entre diferentes aventuras.
 - **Criação de personagem:** possibilidade de definir o nome do personagem ao iniciar uma aventura.
@@ -104,7 +137,7 @@ A versão 0.1 do **Crônicas Sem Fim** contém as seguintes funcionalidades:
 - **Salvamentos manuais:** possibilidade de criar vários pontos de salvamento com nomes personalizados e carregar ou excluir esses pontos.
 - **Persistência dos dados:** as aventuras e seus salvamentos permanecem registrados no arquivo `partida-salva.json` após o encerramento do servidor.
 - **Personalização da experiência:** opções para ajustar o tamanho das respostas da narradora, a velocidade da narração e o tamanho do texto.
-- **Execução local:** o jogo utiliza o Ollama para executar a IA no próprio computador, sem exigir uma chave de API.
+- **Execução local:** o jogo pode utilizar Ollama local sem chave de API ou a API Gemini com chave configurada no servidor.
 
 ### Status do projeto
 

@@ -7,8 +7,11 @@ import { fileURLToPath } from 'node:url';
 import { ESQUEMA, GENEROS, TAMANHOS, TEXTO_ABERTURA, montarPrompt } from './narradora.js';
 
 const PORTA = Number(process.env.PORT) || 3000;
+const PROVEDOR_IA = (process.env.PROVEDOR_IA || 'ollama').toLowerCase();
 const OLLAMA_URL = (process.env.OLLAMA_URL || 'http://127.0.0.1:11434').replace(/\/$/, '');
 const MODELO = process.env.MODELO || 'llama3.1';
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
+const GEMINI_MODELO = process.env.GEMINI_MODELO || 'gemini-3.8-flash';
 // Tamanho da "memória de curto prazo" do modelo, em tokens. Mais memória usa mais RAM.
 const CONTEXTO = Number(process.env.CONTEXTO) || 8192;
 const aqui = path.dirname(fileURLToPath(import.meta.url));
@@ -123,7 +126,7 @@ function limparOpcoes(o) {
   };
 }
 
-/* ---------- conversa com o Ollama ---------- */
+/* ---------- provedores de IA: Ollama local ou Gemini API ---------- */
 
 // Chama o Ollama e devolve o texto completo da resposta.
 // Usa streaming por dentro só para a conexão não expirar em computadores lentos.
@@ -194,6 +197,79 @@ async function chamarOllama({ system, mensagens, maxTokens, formato, temperatura
   return texto;
 }
 
+// A API do Gemini usa nomes de tipos em maiúsculas no responseSchema.
+function esquemaGemini(esquema) {
+  if (Array.isArray(esquema)) return esquema.map(esquemaGemini);
+  if (!esquema || typeof esquema !== 'object') return esquema;
+  const saida = {};
+  for (const [chave, valor] of Object.entries(esquema)) {
+    if (chave === 'type' && typeof valor === 'string') saida[chave] = valor.toUpperCase();
+    else if (chave === 'properties' && valor && typeof valor === 'object') {
+      saida[chave] = Object.fromEntries(Object.entries(valor).map(([k, v]) => [k, esquemaGemini(v)]));
+    } else saida[chave] = esquemaGemini(valor);
+  }
+  return saida;
+}
+
+async function chamarGemini({ system, mensagens, maxTokens, formato, temperatura }) {
+  if (!GEMINI_API_KEY) {
+    throw new ErroNarradora('A chave do Gemini não foi configurada. Adicione GEMINI_API_KEY ao arquivo .env ou mude PROVEDOR_IA para ollama.', 503);
+  }
+
+  const contents = mensagens.map((m) => ({
+    role: m.role === 'assistant' ? 'model' : 'user',
+    parts: [{ text: String(m.content ?? '') }]
+  }));
+  const generationConfig = {
+    temperature: temperatura,
+    maxOutputTokens: maxTokens,
+    ...(formato ? { responseMimeType: 'application/json', responseSchema: esquemaGemini(formato) } : {})
+  };
+
+  let resposta;
+  try {
+    resposta = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(GEMINI_MODELO)}:generateContent`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': GEMINI_API_KEY },
+      signal: AbortSignal.timeout(120000),
+      body: JSON.stringify({
+        systemInstruction: { parts: [{ text: system }] },
+        contents,
+        generationConfig
+      })
+    });
+  } catch (e) {
+    if (e?.name === 'TimeoutError') throw new ErroNarradora('O Gemini demorou demais para responder. Tente novamente em alguns instantes.');
+    console.error('[gemini] falha de conexão:', e?.message ?? e);
+    throw new ErroNarradora('Não consegui conectar à API do Gemini. Verifique sua internet e a configuração da API.', 503);
+  }
+
+  const dados = await resposta.json().catch(() => ({}));
+  if (!resposta.ok) {
+    const detalhe = String(dados.error?.message || '');
+    console.error('[gemini]', resposta.status, detalhe);
+    if (resposta.status === 400 || resposta.status === 403) {
+      throw new ErroNarradora('O Gemini recusou a solicitação. Confira se a chave da API está correta, se o modelo está disponível e se a API está habilitada.');
+    }
+    if (resposta.status === 401) throw new ErroNarradora('A chave da API do Gemini é inválida. Confira GEMINI_API_KEY no arquivo .env.', 503);
+    if (resposta.status === 429) throw new ErroNarradora('O limite de uso do Gemini foi atingido. Aguarde a renovação da cota ou mude PROVEDOR_IA para ollama.', 429);
+    throw new ErroNarradora('O Gemini devolveu um erro. Veja o terminal do servidor para mais detalhes.');
+  }
+
+  const texto = (dados.candidates?.[0]?.content?.parts || []).map((parte) => parte.text || '').join('');
+  if (!texto.trim()) {
+    const motivo = dados.promptFeedback?.blockReason;
+    throw new ErroNarradora(motivo ? `O Gemini bloqueou a solicitação (${motivo}). Tente reformular a ação.` : 'O Gemini não retornou texto. Tente novamente.');
+  }
+  return texto;
+}
+
+function chamarNarradora(args) {
+  if (PROVEDOR_IA === 'gemini') return chamarGemini(args);
+  if (PROVEDOR_IA === 'ollama') return chamarOllama(args);
+  throw new ErroNarradora('PROVEDOR_IA inválido. Use "ollama" ou "gemini" no arquivo .env.', 500);
+}
+
 /* ---------- conversa com a narradora ---------- */
 
 function lerJson(texto) {
@@ -253,7 +329,7 @@ async function compactar(partida) {
     .join('\n\n');
 
   const resumo = (
-    await chamarOllama({
+    await chamarNarradora({
       system:
         'Você resume partidas de RPG de texto. Escreva em português, em no máximo 150 palavras, ' +
         'os fatos que importam para continuar a história: quem é o personagem, onde esteve, o que ' +
@@ -282,7 +358,7 @@ async function narrar(partida, textoDoJogador) {
 
   const mensagens = [...partida.mensagens, { role: 'user', content: textoDoJogador }];
 
-  const texto = await chamarOllama({
+  const texto = await chamarNarradora({
     system: montarPrompt(partida.opcoes, partida.resumo, partida.estado),
     mensagens,
     maxTokens: TAMANHOS[partida.opcoes.respostas].maxTokens,
@@ -479,6 +555,11 @@ async function verificarOllama() {
 
 // Escuta só neste computador, para ninguém na sua rede usar a sua máquina
 app.listen(PORTA, '127.0.0.1', () => {
-  console.log(`Crônicas Sem Fim rodando em http://localhost:${PORTA} (modelo: ${MODELO})`);
-  verificarOllama();
+  if (PROVEDOR_IA === 'gemini') {
+    console.log(`Crônicas Sem Fim rodando em http://localhost:${PORTA} (Gemini: ${GEMINI_MODELO})`);
+    if (!GEMINI_API_KEY) console.warn('Aviso: PROVEDOR_IA=gemini, mas GEMINI_API_KEY não foi definida no .env.');
+  } else {
+    console.log(`Crônicas Sem Fim rodando em http://localhost:${PORTA} (Ollama: ${MODELO})`);
+    verificarOllama();
+  }
 });

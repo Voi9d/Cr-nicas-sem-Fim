@@ -4,6 +4,15 @@ RPG de texto em que uma IA narra a história e escreve as consequências de cada
 
 A narradora pode usar um modelo local pelo Ollama ou a API do Gemini, do Google. Com Ollama, o jogo pode funcionar sem internet; com Gemini, é necessária conexão e uma chave de API.
 
+
+### Memória compartilhada e troca automática de narrador
+
+A memória da aventura é controlada pelo próprio jogo, e não fica presa à memória interna do Gemini ou da Llama. O jogo salva o histórico recente, um resumo dos acontecimentos anteriores e o estado atual do personagem (vida, condição, local e mochila) em `partida-salva.json`. Essas informações são enviadas à IA escolhida em cada jogada.
+
+Quando `PROVEDOR_IA=gemini`, o Gemini é o narrador principal. Se ele falhar por indisponibilidade, limite de uso, erro de conexão ou outro erro, o servidor tenta continuar com o Ollama usando o mesmo contexto e estado da aventura. Para isso funcionar, o Ollama precisa estar instalado, em execução, e o modelo definido em `MODELO` precisa estar baixado. Se os dois provedores falharem, o jogo informa o erro e preserva o estado anterior da jogada para que o jogador possa tentar novamente.
+
+O arquivo `partida-salva.json` contém o progresso pessoal e é ignorado pelo Git. Não o apague se quiser manter suas aventuras locais.
+
 ## Como rodar
 
 1. Instale o Node.js (versão 18 ou mais nova): https://nodejs.org
@@ -139,20 +148,48 @@ A versão 0.1 do **Crônicas Sem Fim** contém as seguintes funcionalidades:
 - **Personalização da experiência:** opções para ajustar o tamanho das respostas da narradora, a velocidade da narração e o tamanho do texto.
 - **Execução local:** o jogo pode utilizar Ollama local sem chave de API ou a API Gemini com chave configurada no servidor.
 
-### Status do projeto
+## Versão 0.2 — Funcionalidades
 
-A versão 0.1 representa a primeira etapa do projeto, com o sistema básico de RPG, a narração por inteligência artificial e o gerenciamento de aventuras e salvamentos implementados. O projeto poderá receber melhorias, correções e novas funcionalidades em versões futuras.
+A versão 0.1 do **Crônicas Sem Fim** contém as seguintes funcionalidades:
 
-## Funcionalidades planejadas para versões futuras
+- Adaptado e colocado uma API do Gemini, para cada jogador poder escolher entre utilizar da Llama como ia principal, ou uma API do Gemini.
+OBS: Você deve ter sua própria API para isso, e então colocar no .env (crie um na pasta, o .env.example apenas copie e cole no .env que você criar).
 
-O **Crônicas Sem Fim** está em desenvolvimento, e algumas das ideias para as próximas versões incluem:
+## Criação de personagem (fantasia)
 
-- **Sistema de fichas de personagem:** permitir que o jogador crie uma ficha antes de iniciar uma aventura, definindo atributos, habilidades, características e outras informações relevantes para o personagem.
-- **Sistema de atributos e habilidades:** utilizar os valores da ficha para influenciar as ações, os testes e as possibilidades do personagem durante a história.
-- **Rolagem de dados:** implementar dados virtuais, como o clássico D20, para determinar o resultado de ações, testes de habilidade, combates e situações de risco.
-- **Sistema de testes e dificuldades:** combinar os atributos do personagem, as rolagens de dados e a dificuldade de cada situação para determinar o sucesso ou o fracasso de uma ação.
-- **Combate mais desenvolvido:** aprimorar as mecânicas de combate, considerando atributos, equipamentos, ferimentos e resultados das rolagens.
-- **Inventário e equipamentos:** expandir o gerenciamento de itens, armas, armaduras e outros recursos que possam influenciar a aventura.
-- **Maior integração entre as mecânicas e a IA:** fazer com que a narradora considere melhor as fichas, os atributos, as rolagens e as regras do jogo ao descrever as consequências das ações.
+Nas novas aventuras de fantasia, o jogador precisa confirmar uma ficha antes de começar. A ficha inclui identidade, classe, origem, história editável e seis atributos. Os atributos começam em 8, podem chegar a 15 e usam um orçamento de 27 pontos; valores acima de 13 custam pontos adicionais. É possível distribuir manualmente ou aplicar uma sugestão automática pela classe. A história pode ser escrita à mão ou gerada pela IA disponível, com fallback Gemini/Ollama. A ficha fica salva junto à aventura e é enviada no contexto narrativo aos dois provedores. Aventuras antigas continuam carregáveis sem ficha.
 
-Essas funcionalidades representam ideias para o desenvolvimento futuro do projeto e poderão ser modificadas, ampliadas ou reorganizadas conforme a evolução do jogo.
+
+---
+
+## Versão 0.5
+
+### Universo Fantasia: Avarn
+
+- O cânone editável do universo fica em `lore.js`.
+- Esse arquivo alimenta a página `public/lore.html` (Menu → Sistema → Fantasia) e também é incluído no contexto da IA narradora nas aventuras de Fantasia.
+- Para alterar povos, deuses, continentes, reinos, magia, criaturas ou eras, edite `AVARN.categorias` e `AVARN.regrasNarrativas` em `lore.js`. Evite apresentar segredos como conhecimento comum dos personagens; a IA recebe instruções para preservar essas informações.
+- A criação de personagem inclui a escolha de raça, com descrição e longevidade aproximada. A raça escolhida é incluída na ficha e no contexto da narradora.
+- O menu `Sistema` apresenta as opções Fantasia — Avarn e CyberPunk. CyberPunk permanece em desenvolvimento, ainda sem um cânone ou sistema de jogo implementado.
+
+### Interação livre com a narradora
+
+Ao final de cada narração, o jogador pode escolher entre **Ação**, **Falar Algo** e **Continuar**.
+
+- **Ação:** permite descrever livremente o que o personagem tenta fazer.
+- **Falar Algo:** permite informar o NPC com quem deseja conversar e escrever a própria fala. A narradora deve responder por meio de diálogos e pode descrever as reações do NPC.
+- **Continuar:** solicita internamente que a narradora prossiga com a cena, sem exigir uma ação ou fala do personagem. A instrução interna não é exibida ao jogador como parte da história.
+
+As antigas opções de ações sugeridas foram removidas para dar mais liberdade à interpretação e às decisões do jogador.
+
+### Ficha do personagem e Diário
+
+- A ficha do personagem pode ser consultada durante a aventura por meio do botão **Ficha**.
+- O Diário permite registrar anotações pessoais e organizar informações em pastas.
+- O registro automático da narradora pode ser ativado ou desativado pelo jogador.
+- As informações automáticas devem ser organizadas por assunto, como personagens e NPCs, lugares, pistas e acontecimentos importantes, em vez de simplesmente copiar os parágrafos da narração.
+- Quando uma informação é adicionada automaticamente, o jogo exibe uma notificação para informar o jogador.
+
+### Objetivo desta versão
+
+A versão 0.5 amplia a experiência de interpretação livre, a consulta à ficha do personagem e a organização de informações importantes da aventura. O objetivo é aproximar o jogo de uma experiência de RPG contínua, na qual as decisões do jogador, os acontecimentos narrados e as informações descobertas possam ser acompanhados durante a jornada.

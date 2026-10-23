@@ -1,0 +1,18 @@
+.lore-page{max-width:1200px;margin:auto;padding:2rem 1.2rem 4rem}.lore-header{display:flex;align-items:center;justify-content:space-between;gap:2rem;margin-bottom:2rem;border-bottom:1px solid var(--borda,rgba(255,255,255,.2));padding-bottom:1.5rem}.lore-header .titulo{font-family:var(--fonte-titulo,Georgia,serif);font-size:clamp(2.3rem,5vw,4rem);margin:.2rem 0}.lore-links{display:flex;gap:.6rem;flex-wrap:wrap}.lore-layout{display:grid;grid-template-columns:minmax(190px,260px) minmax(0,1fr);gap:1.5rem;align-items:start}.lore-nav,.lore-conteudo{background:rgba(20,17,15,.28);border:1px solid rgba(210,180,130,.22);border-radius:12px;padding:1.1rem}.lore-nav{position:sticky;top:1rem}.lore-nav h2{margin-top:0}.lore-categorias{display:grid;gap:.45rem}.lore-categoria{width:100%;text-align:left;padding:.7rem .8rem;border:1px solid transparent;border-radius:8px;background:transparent;color:inherit;font:inherit;cursor:pointer}.lore-categoria:hover,.lore-categoria.ativa{background:rgba(210,180,130,.13);border-color:rgba(210,180,130,.4)}.lore-artigo{padding:1rem 0;border-bottom:1px solid rgba(210,180,130,.18)}.lore-artigo:first-child{padding-top:0}.lore-artigo:last-child{border-bottom:0}.lore-artigo h3{margin:.1rem 0 .45rem;color:var(--destaque,#dfc08b)}.lore-artigo p{line-height:1.75;margin:.35rem 0}.lore-conteudo h2{margin-top:0}.lore-footer{margin-top:1.5rem;opacity:.75;font-size:.9rem;line-height:1.6}.sistema-opcoes{display:grid;max-width:500px}.sistema-opcoes>*{text-align:center;justify-content:center}@media(max-width:720px){.lore-header{align-items:flex-start;flex-direction:column}.lore-layout{grid-template-columns:1fr}.lore-nav{position:static}.lore-categorias{grid-template-columns:repeat(2,minmax(0,1fr))}/* Botão Menu principal da enciclopédia */
+header a,
+.cabecalho a {
+    background: transparent;
+    color: #a8b2cc;
+    border: 1px solid #39445f;
+    box-shadow: none;
+    text-decoration: none;
+    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+header a:hover,
+.cabecalho a:hover {
+    background: rgba(229, 165, 47, 0.06);
+    color: #f0e7d2;
+    border-color: #e5a52f;
+    text-decoration: none;
+}}

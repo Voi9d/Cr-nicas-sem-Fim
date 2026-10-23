@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Criar personagem — Crônicas Sem Fim</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=Spectral:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css"><link rel="stylesheet" href="ficha.css">
+</head>
+<body class="entrando">
+  <main class="ficha-page">
+    <header class="ficha-header"><div><p class="eyebrow">CRÔNICAS SEM FIM · FANTASIA</p><h1 class="titulo">Criação de personagem</h1><p class="subtitulo">Antes da aventura, define quem vai viver essa história.</p></div><a class="btn-sec" href="index.html">Cancelar</a></header>
+    <form id="form-ficha">
+      <section class="ficha-section"><h2>1. Identidade</h2><div class="ficha-grid">
+        <label class="campo">Nome *<input name="nome" maxlength="40" required placeholder="Nome do personagem"></label>
+        <label class="campo">Idade<input name="idade" maxlength="3" inputmode="numeric" placeholder="Ex.: 27"></label>
+        <label class="campo">Gênero<input name="genero" maxlength="30" placeholder="Opcional"></label>
+        <label class="campo campo-largo">Aparência física<textarea name="aparencia" maxlength="500" rows="3" placeholder="Altura, cabelos, olhos, marcas, roupas..."></textarea></label>
+        <div class="campo campo-largo retrato-area"><span class="campo-titulo">Retrato do personagem</span><p class="dica">Escolhe um símbolo ou envia uma imagem do teu computador.</p>
+          <div class="retrato-editor"><div id="retrato-preview" class="retrato-preview" aria-label="Prévia do retrato">🧙</div><div class="retrato-opcoes">
+            <div id="retrato-presets" class="retrato-presets" aria-label="Retratos padrão"></div>
+            <label class="btn-sec upload-label" for="retrato-arquivo">📷 Enviar imagem</label><input id="retrato-arquivo" type="file" accept="image/png,image/jpeg,image/webp" hidden>
+            <button id="remover-retrato" class="btn-sec" type="button">Usar símbolo padrão</button>
+          </div></div>
+        </div>
+      </div></section>
+      <section class="ficha-section"><h2>2. Raça</h2>
+        <div class="campo"><label for="raca-personagem">Escolha seu povo *</label>
+          <select id="raca-personagem" name="raca" required>
+            <option value="humanos">Humanos</option><option value="elfos">Elfos</option><option value="anoes">Anões</option><option value="goblins">Goblins</option><option value="orcs">Orcs</option><option value="pequeninos">Pequeninos</option>
+          </select>
+          <p class="dica">A raça apresenta a origem cultural e a longevidade aproximada, mas não define sua personalidade ou moralidade.</p>
+        </div>
+        <article id="descricao-raca" class="descricao-card" aria-live="polite"></article>
+      </section>
+      <section class="ficha-section"><h2>3. Classe e origem</h2><div class="ficha-grid">
+        <label class="campo">Classe *<select name="classe" required><option value="guerreiro">Guerreiro</option><option value="ladino">Ladino</option><option value="mago">Mago</option><option value="patrulheiro">Patrulheiro</option><option value="paladino">Paladino</option></select><span class="dica">Escolhe o caminho de combate e as aptidões principais.</span></label>
+        <label class="campo">Origem *<select name="origem" required><option value="nobre">Nobre</option><option value="orfao">Órfão</option><option value="mercenario">Mercenário</option><option value="aprendiz">Aprendiz</option><option value="ex_criminoso">Ex-criminoso</option><option value="viajante">Viajante</option></select><span class="dica">Define de onde veio e quais experiências moldaram o personagem.</span></label>
+      </div><div class="descricao-dupla"><article id="descricao-classe" class="descricao-card" aria-live="polite"></article><article id="descricao-origem" class="descricao-card" aria-live="polite"></article></div></section>
+      <section class="ficha-section"><h2>4. História pessoal</h2><p class="dica">Escreve tua própria história ou gera uma sugestão com a IA. Tudo pode ser editado antes de confirmar.</p>
+        <div class="campo"><label for="hist-passado">Passado</label><textarea id="hist-passado" name="passado" rows="5" maxlength="3000" placeholder="O que aconteceu antes do início da aventura?"></textarea></div>
+        <div class="ficha-grid">
+          <label class="campo">Personalidade<textarea name="personalidade" rows="3" maxlength="800" placeholder="Como costuma agir?"></textarea></label>
+          <label class="campo">Objetivo<textarea name="objetivo" rows="3" maxlength="500" placeholder="O que deseja alcançar?"></textarea></label>
+          <label class="campo">Medo<textarea name="medo" rows="2" maxlength="500" placeholder="O que teme?"></textarea></label>
+          <label class="campo">Segredo<textarea name="segredo" rows="2" maxlength="500" placeholder="Um segredo, se houver"></textarea></label>
+        </div>
+        <div class="inline-actions"><button id="gerar-historia" class="btn-sec" type="button">Gerar história com IA</button><span id="status-ia" role="status" class="dica"></span></div>
+      </section>
+      <section class="ficha-section"><h2>5. Atributos</h2><p>Todos começam em 8. Tens <strong>27 pontos</strong> para distribuir, com limite de 15 por atributo. A classe pode sugerir uma distribuição automática, que tu podes ajustar.</p>
+        <div class="inline-actions"><button id="distribuir-auto" class="btn-sec" type="button">✨ Distribuir automaticamente pela classe</button><button id="resetar-atributos" class="btn-sec" type="button">↺ Resetar para o padrão</button><span id="pontos-restantes" class="pontos">Pontos restantes: 27</span></div>
+        <div id="atributos" class="atributos-grid"></div>
+      </section>
+      <p id="erro-ficha" class="erro-ficha" role="alert" hidden></p>
+      <div class="ficha-footer"><a class="btn-sec" href="index.html">Voltar</a><button class="btn" type="submit">Confirmar ficha e iniciar aventura</button></div>
+    </form>
+  </main>
+  <aside class="marca-dagua"><span>Feito por Gabriel Broch Lago</span><span>GitHub: <a href="https://github.com/Voi9d" target="_blank" rel="noopener noreferrer">Voi9d</a> · Versão Beta</span></aside>
+  <script src="ficha.js"></script>
+</body></html>

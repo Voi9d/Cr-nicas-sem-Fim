@@ -23,6 +23,7 @@
         <ul class="lista-menu" id="lista-menu">
           <li><button class="item" id="btn-iniciar" type="button">Iniciar</button></li>
           <li><a class="item" id="btn-aventuras" href="aventuras.html">Selecionar Aventura</a></li>
+          <li><button class="item" id="btn-sistema" type="button">Sistema</button></li>
           <li><button class="item" id="btn-opcoes" type="button">Opções</button></li>
           <li><button class="item" id="btn-creditos" type="button">Créditos</button></li>
         </ul>
@@ -55,6 +56,18 @@
         <button id="criar-aventura" class="btn" type="button">Criar história</button>
         <button id="voltar-nova" class="btn-sec" type="button">Voltar</button>
       </div>
+    </section>
+
+    <!-- Escolha do sistema de jogo -->
+    <section id="tela-sistema" class="tela" aria-labelledby="t-sistema" hidden>
+      <h2 id="t-sistema" class="titulo-tela">Sistema</h2>
+      <p class="chamada">Escolha o universo que deseja explorar.</p>
+      <div class="acoes-tela sistema-opcoes">
+        <a class="btn" href="lore.html">Fantasia — Avarn</a>
+        <button id="btn-cyberpunk" class="btn-sec" type="button">CyberPunk — NightCity</button>
+        <button id="voltar-sistema" class="btn-sec" type="button">Voltar</button>
+      </div>
+      <p id="sistema-aviso" class="dica" role="status"></p>
     </section>
 
     <!-- Opções -->
@@ -119,7 +132,7 @@
         <div><dt>Narradora</dt><dd>Llama, modelo de linguagem da Meta, rodando no seu computador com o Ollama</dd></div>
         <div><dt>Tipografia</dt><dd>IM Fell English, de Igino Marini, e Spectral, da Production Type, ambas pelo Google Fonts</dd></div>
         <div><dt>Feito com</dt><dd>HTML, CSS e JavaScript</dd></div>
-        <div><dt>Versão</dt><dd>0.1</dd></div>
+        <div><dt>Versão</dt><dd>0.5</dd></div>
       </dl>
 
       <p class="agradecimento">Obrigado por jogar.</p>
@@ -134,7 +147,7 @@
 
   <aside class="marca-dagua" aria-label="Créditos do projeto">
     <span>Feito por Gabriel Broch Lago</span>
-    <span>GitHub: <a href="https://github.com/Voi9d" target="_blank" rel="noopener noreferrer">Voi9d</a> · Versão Beta</span>
+    <span>GitHub: <a href="https://github.com/Voi9d" target="_blank" rel="noopener noreferrer">Voi9d</a> · Versão Beta 0.5</span>
   </aside>
 </body>
 </html>

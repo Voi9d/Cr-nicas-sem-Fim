@@ -5,6 +5,7 @@ import path from 'node:path';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { ESQUEMA, GENEROS, TAMANHOS, TEXTO_ABERTURA, montarPrompt } from './narradora.js';
+import { AVARN, textoCanonicoAvarn } from './lore.js';
 
 const PORTA = Number(process.env.PORT) || 3000;
 const PROVEDOR_IA = (process.env.PROVEDOR_IA || 'ollama').toLowerCase();
@@ -18,8 +19,9 @@ const aqui = path.dirname(fileURLToPath(import.meta.url));
 const ARQUIVO_SALVO = path.join(aqui, 'partida-salva.json');
 
 const app = express();
-app.use(express.json({ limit: '20kb' }));
+app.use(express.json({ limit: '1mb' }));
 app.use(express.static(path.join(aqui, 'public')));
+app.get('/api/lore', (_req, res) => res.json(AVARN));
 
 /* ---------- partidas (ficam na memória; reiniciar o servidor apaga todas) ---------- */
 
@@ -47,6 +49,8 @@ try {
   }
 } catch (e) { console.warn('[salvamento] O arquivo salvo não pôde ser carregado:', e.message); }
 
+// MEMÓRIA COMPARTILHADA: resumo + estado atual + mensagens recentes ficam no save do jogo.
+// Gemini e Ollama recebem esse mesmo conjunto; a memória não depende da sessão interna de nenhum modelo.
 // Quando o histórico passa de LIMITE mensagens, as mais antigas viram um resumo.
 // Os valores são baixos de propósito: modelos locais têm pouca memória de curto prazo.
 const LIMITE_MENSAGENS = 16;
@@ -80,6 +84,7 @@ function atualizarPartida(partidaId, partida) {
 function snapshotPartida(partida) {
   return JSON.parse(JSON.stringify({
     opcoes: partida.opcoes,
+    ficha: partida.ficha || null,
     mensagens: partida.mensagens,
     resumo: partida.resumo,
     estado: partida.estado,
@@ -264,10 +269,34 @@ async function chamarGemini({ system, mensagens, maxTokens, formato, temperatura
   return texto;
 }
 
-function chamarNarradora(args) {
-  if (PROVEDOR_IA === 'gemini') return chamarGemini(args);
+async function chamarNarradora(args) {
   if (PROVEDOR_IA === 'ollama') return chamarOllama(args);
-  throw new ErroNarradora('PROVEDOR_IA inválido. Use "ollama" ou "gemini" no arquivo .env.', 500);
+  if (PROVEDOR_IA !== 'gemini') {
+    throw new ErroNarradora('PROVEDOR_IA inválido. Use "ollama" ou "gemini" no arquivo .env.', 500);
+  }
+
+  // A memória pertence ao jogo, não ao provedor: os dois recebem exatamente
+  // o mesmo prompt, resumo, estado atual e histórico da aventura.
+  try {
+    return await chamarGemini(args);
+  } catch (erroGemini) {
+    console.warn(`[fallback] Gemini falhou (${erroGemini?.status || 'sem status'}): ${erroGemini?.message || erroGemini}`);
+    console.warn('[fallback] Tentando continuar a aventura com o Ollama usando a memória compartilhada...');
+
+    try {
+      const texto = await chamarOllama(args);
+      console.warn('[fallback] Ollama respondeu. A aventura continuou com a memória central do jogo.');
+      return texto;
+    } catch (erroOllama) {
+      console.error('[fallback] Gemini e Ollama falharam.', erroOllama?.message || erroOllama);
+      // Preserva a informação do primeiro erro, mas explica que o narrador
+      // alternativo também não está disponível.
+      throw new ErroNarradora(
+        `O Gemini não conseguiu responder e o Ollama também falhou. Gemini: ${erroGemini?.message || 'erro desconhecido'} Ollama: ${erroOllama?.message || 'erro desconhecido'}`,
+        erroOllama?.status || erroGemini?.status || 503
+      );
+    }
+  }
 }
 
 /* ---------- conversa com a narradora ---------- */
@@ -305,8 +334,7 @@ function sanear(x, estadoAnterior = null) {
   const n = Number(x.vida);
   const vida = Number.isFinite(n) ? Math.max(0, Math.min(10, Math.round(n))) : (estadoAnterior?.vida ?? 10);
   const fim = x.fim === true || vida === 0;
-  const opcoes = fim ? [] : textosValidos(x.opcoes, 4);
-  if (!fim && opcoes.length === 0) return null;
+  const opcoes = []; // A interface usa ações livres, não escolhas sugeridas pela IA.
 
   return {
     narracao,
@@ -315,6 +343,7 @@ function sanear(x, estadoAnterior = null) {
     condicao: limparTexto(x.condicao, 160) || 'sem ferimentos relevantes',
     local: limparTexto(x.local, 40) || 'Lugar desconhecido',
     mochila: textosValidos(x.mochila, 20),
+    diario: Array.isArray(x.diario) ? x.diario.slice(0, 4).map(n => ({ pasta: ['Personagens e NPCs','Missões e pistas','Lugares','Itens','Geral'].includes(n?.pasta) ? n.pasta : 'Geral', titulo: limparTexto(n?.titulo, 120), pontos: textosValidos(n?.pontos, 6).map(p => limparTexto(p, 240)).filter(Boolean) })).filter(n => n.titulo && n.pontos.length) : [],
     fim
   };
 }
@@ -359,7 +388,7 @@ async function narrar(partida, textoDoJogador) {
   const mensagens = [...partida.mensagens, { role: 'user', content: textoDoJogador }];
 
   const texto = await chamarNarradora({
-    system: montarPrompt(partida.opcoes, partida.resumo, partida.estado),
+    system: montarPrompt({ ...partida.opcoes, ficha: partida.ficha || null }, partida.resumo, partida.estado),
     mensagens,
     maxTokens: TAMANHOS[partida.opcoes.respostas].maxTokens,
     formato: ESQUEMA,
@@ -411,17 +440,103 @@ function responderErro(res, e) {
   res.status(500).json({ erro: 'A narradora não conseguiu responder. Tente de novo.' });
 }
 
+function limparRetrato(valor) {
+  if (!valor || typeof valor !== 'object') return { tipo: 'emoji', valor: '🧙' };
+  if (valor.tipo === 'emoji' && typeof valor.valor === 'string' && ['🧙','🧝','🧝‍♀️','🧔','🧑‍🎤','🛡️','🏹','🗡️','🧛','🧚','🐺','🐉'].includes(valor.valor)) {
+    return { tipo: 'emoji', valor: valor.valor };
+  }
+  if (valor.tipo === 'imagem' && typeof valor.valor === 'string' && /^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(valor.valor) && valor.valor.length <= 350000) {
+    return { tipo: 'imagem', valor: valor.valor };
+  }
+  return { tipo: 'emoji', valor: '🧙' };
+}
+
+function limparFicha(valor) {
+  if (!valor || typeof valor !== 'object') return null;
+  const racas = { humanos: 'Humanos', elfos: 'Elfos', anoes: 'Anões', goblins: 'Goblins', orcs: 'Orcs', pequeninos: 'Pequeninos' };
+  const classes = {
+    guerreiro: 'Guerreiro', ladino: 'Ladino', mago: 'Mago', patrulheiro: 'Patrulheiro', paladino: 'Paladino'
+  };
+  const origens = {
+    nobre: 'Nobre', orfao: 'Órfão', mercenario: 'Mercenário', aprendiz: 'Aprendiz', ex_criminoso: 'Ex-criminoso', viajante: 'Viajante'
+  };
+  const atributosValidos = ['forca', 'destreza', 'constituicao', 'inteligencia', 'sabedoria', 'carisma'];
+  if (!racas[valor.raca] || !classes[valor.classe] || !origens[valor.origem]) return null;
+  const nome = limparTexto(valor.nome, 40);
+  if (!nome) return null;
+  const historia = valor.historia && typeof valor.historia === 'object' ? valor.historia : {};
+  const atributos = {};
+  let total = 0;
+  for (const chave of atributosValidos) {
+    const n = Number(valor.atributos?.[chave]);
+    if (!Number.isInteger(n) || n < 8 || n > 15) return null;
+    atributos[chave] = n;
+    total += n <= 13 ? n - 8 : 5 + (n - 13) * 2;
+  }
+  if (total > 27) return null;
+  return {
+    versao: 1,
+    nome,
+    idade: limparTexto(valor.idade, 3),
+    genero: limparTexto(valor.genero, 30),
+    aparencia: limparTexto(valor.aparencia, 500),
+    raca: valor.raca,
+    racaNome: racas[valor.raca],
+    racaLore: limparTexto(valor.racaLore, 1000),
+    retrato: limparRetrato(valor.retrato),
+    classe: valor.classe,
+    classeNome: classes[valor.classe],
+    origem: valor.origem,
+    origemNome: origens[valor.origem],
+    historia: {
+      passado: limparTexto(historia.passado, 3000),
+      personalidade: limparTexto(historia.personalidade, 800),
+      objetivo: limparTexto(historia.objetivo, 500),
+      medo: limparTexto(historia.medo, 500),
+      segredo: limparTexto(historia.segredo, 500)
+    },
+    atributos,
+    pontosGastos: total,
+    criadaEm: new Date().toISOString()
+  };
+}
+
+app.post('/api/personagem/gerar-historia', async (req, res) => {
+  try {
+    const raca = limparTexto(req.body?.raca, 40);
+    const classe = limparTexto(req.body?.classe, 40);
+    const origem = limparTexto(req.body?.origem, 40);
+    const nome = limparTexto(req.body?.nome, 40);
+    const aparencia = limparTexto(req.body?.aparencia, 500);
+    const objetivo = limparTexto(req.body?.objetivo, 500);
+    if (!nome || !classe || !origem) return res.status(400).json({ erro: 'Preencha nome, classe e origem antes de gerar a história.' });
+    const texto = await chamarNarradora({
+      system: `CÂNONE DE AVARN:\n${textoCanonicoAvarn()}\n\nVocê é uma escritora de RPG de fantasia medieval. Escreva uma história de personagem em português brasileiro, coerente com raça, classe, origem e o cânone de Avarn. Não comece a aventura principal nem decida ações futuras. Crie um passado plausível, personalidade, motivação, medo e um segredo opcional. Não dê poderes ou equipamentos especiais sem justificativa. Responda apenas com JSON válido com as chaves passado, personalidade, objetivo, medo e segredo, todas strings.`,
+      mensagens: [{ role: 'user', content: JSON.stringify({ nome, raca, classe, origem, aparencia, objetivo: objetivo || 'deixe surgir uma motivação interessante' }) }],
+      maxTokens: 900,
+      temperatura: 0.8,
+      formato: { type: 'object', properties: { passado: { type: 'string' }, personalidade: { type: 'string' }, objetivo: { type: 'string' }, medo: { type: 'string' }, segredo: { type: 'string' } }, required: ['passado', 'personalidade', 'objetivo', 'medo', 'segredo'] }
+    });
+    const historia = lerJson(texto);
+    if (!historia || typeof historia.passado !== 'string') throw new ErroNarradora('A IA não gerou uma história válida. Tente novamente.');
+    res.json({ historia: Object.fromEntries(['passado','personalidade','objetivo','medo','segredo'].map(k => [k, limparTexto(historia[k], k === 'passado' ? 3000 : 800)])) });
+  } catch (e) { responderErro(res, e); }
+});
+
 /* ---------- rotas ---------- */
 
 app.post('/api/iniciar', async (req, res) => {
   try {
     const opcoes = limparOpcoes(req.body?.opcoes);
-    const partida = { nomeAventura: limparTexto(req.body?.nomeAventura, 60) || `Aventura ${temaLegivel(opcoes.genero)}`, opcoes, mensagens: [], resumo: '', estado: { vida: 10, condicao: 'sem ferimentos relevantes', local: '', mochila: [] }, fim: false, ocupada: false, turnos: [], salvamentosManuais: [], criadaEm: new Date().toISOString() };
+    const ficha = opcoes.genero === 'fantasia' ? limparFicha(req.body?.ficha) : null;
+    if (opcoes.genero === 'fantasia' && !ficha) return res.status(400).json({ erro: 'Crie e confirme a ficha do personagem antes de iniciar uma nova aventura de fantasia.' });
+    if (ficha) opcoes.nome = ficha.nome;
+    const partida = { ficha, nomeAventura: limparTexto(req.body?.nomeAventura, 60) || `Aventura ${temaLegivel(opcoes.genero)}`, opcoes, mensagens: [], resumo: '', estado: { vida: 10, condicao: 'sem ferimentos relevantes', local: '', mochila: [] }, fim: false, ocupada: false, turnos: [], salvamentosManuais: [], criadaEm: new Date().toISOString() };
     const turno = await narrar(partida, TEXTO_ABERTURA);
     partida.turnos.push({ acao: null, turno });
     const id = registrar(partida);
     persistirPartidas();
-    res.json({ ...paraCliente(turno, id), nomeAventura: partida.nomeAventura, tema: partida.opcoes.genero });
+    res.json({ ...paraCliente(turno, id), nomeAventura: partida.nomeAventura, tema: partida.opcoes.genero, ficha: partida.ficha || null });
   } catch (e) {
     responderErro(res, e);
   }
@@ -430,7 +545,7 @@ app.post('/api/iniciar', async (req, res) => {
 app.get('/api/continuar', (req, res) => {
   const partida = partidaAtualId ? partidas.get(partidaAtualId) : null;
   if (!partida || !partida.ultimoTurno) return res.json({ existe: false });
-  res.json({ existe: true, partidaId: partidaAtualId, turnos: partida.turnos || [], atual: paraCliente(partida.ultimoTurno, partidaAtualId) });
+  res.json({ existe: true, partidaId: partidaAtualId, nomeAventura: partida.nomeAventura, tema: partida.opcoes?.genero, ficha: partida.ficha || null, turnos: partida.turnos || [], atual: paraCliente(partida.ultimoTurno, partidaAtualId) });
 });
 
 app.get('/api/aventuras', (_req, res) => {
@@ -447,7 +562,7 @@ app.post('/api/aventuras/carregar', (req, res) => {
   if (!partida?.ultimoTurno) return res.status(404).json({ erro: 'Essa aventura não foi encontrada.' });
   partidaAtualId = id;
   atualizarPartida(id, partida);
-  res.json({ existe: true, partidaId: id, nomeAventura: partida.nomeAventura, tema: partida.opcoes.genero, turnos: partida.turnos || [], atual: paraCliente(partida.ultimoTurno, id) });
+  res.json({ existe: true, partidaId: id, nomeAventura: partida.nomeAventura, tema: partida.opcoes.genero, ficha: partida.ficha || null, turnos: partida.turnos || [], atual: paraCliente(partida.ultimoTurno, id) });
 });
 
 app.get('/api/aventuras/:id/salvamentos', (req, res) => {
@@ -477,7 +592,7 @@ app.post('/api/aventuras/:id/salvamentos/:saveId/carregar', (req, res) => {
   partida.ocupada = false;
   partidaAtualId = req.params.id;
   atualizarPartida(req.params.id, partida);
-  res.json({ existe: true, partidaId: req.params.id, nomeAventura: partida.nomeAventura, tema: partida.opcoes.genero, turnos: partida.turnos || [], atual: paraCliente(partida.ultimoTurno, req.params.id) });
+  res.json({ existe: true, partidaId: req.params.id, nomeAventura: partida.nomeAventura, tema: partida.opcoes.genero, ficha: partida.ficha || null, turnos: partida.turnos || [], atual: paraCliente(partida.ultimoTurno, req.params.id) });
 });
 
 app.delete('/api/aventuras/:id/salvamentos/:saveId', (req, res) => {
@@ -514,14 +629,23 @@ app.post('/api/jogada', async (req, res) => {
     return res.status(409).json({ erro: 'A narradora ainda está escrevendo. Espere um instante.' });
   }
 
-  const acao = limparTexto(req.body?.acao, 300);
-  if (!acao) {
-    return res.status(400).json({ erro: 'Escreva o que você quer fazer.' });
-  }
+  const tipoSolicitado = req.body?.tipo;
+  const continuar = tipoSolicitado === 'continuar';
+  const tipo = tipoSolicitado === 'fala' ? 'fala' : 'acao';
+  const texto = limparTexto(req.body?.acao, 600);
+  const destinatario = limparTexto(req.body?.destinatario, 120);
+  if (!continuar && !texto) return res.status(400).json({ erro: tipo === 'fala' ? 'Escreva o que você quer dizer.' : 'Descreva o que você quer fazer.' });
+  if (tipo === 'fala' && !destinatario) return res.status(400).json({ erro: 'Diga com quem você quer falar.' });
+  const acao = continuar ? '' : (tipo === 'fala' ? `Você fala com ${destinatario}: “${texto}”` : texto);
+  const entradaNarradora = continuar
+    ? '<instrucao_interna>Continue a narrar a cena a partir do estado atual, fazendo o mundo avançar de forma natural. Não invente uma ação ou fala do personagem jogador. Esta instrução é interna e não deve aparecer como fala ou ação do jogador.</instrucao_interna>'
+    : (tipo === 'fala'
+      ? `<fala_do_jogador destinatario="${destinatario.replace(/[<>"&]/g, '')}">${texto}</fala_do_jogador>`
+      : `<acao_do_jogador>${texto}</acao_do_jogador>`);
 
   partida.ocupada = true;
   try {
-    const turno = await narrar(partida, `<acao_do_jogador>${acao}</acao_do_jogador>`);
+    const turno = await narrar(partida, entradaNarradora);
     if (!partida.turnos) partida.turnos = [];
     partida.turnos.push({ acao, turno });
     atualizarPartida(partidaId, partida);

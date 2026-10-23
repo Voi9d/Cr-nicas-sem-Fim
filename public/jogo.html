@@ -22,6 +22,8 @@
         <a class="btn-sec" href="index.html">Menu</a>
         <button id="btn-salvar" class="btn-sec" type="button">Salvar ponto</button>
         <button id="btn-salvamentos" class="btn-sec" type="button">Salvamentos</button>
+        <button id="btn-ficha" class="btn-sec" type="button">Ficha</button>
+        <button id="btn-diario" class="btn-sec" type="button">Diário</button>
         <button id="novo-jogo" class="btn-sec" type="button">Nova aventura</button>
       </div>
     </header>
@@ -42,13 +44,32 @@
           <p class="dica-salvamento">Carregar um ponto volta a história para aquele momento. Os outros pontos continuam guardados.</p>
           <div id="lista-salvamentos"></div>
         </section>
+        <section id="painel-ficha" class="painel-extra" hidden aria-label="Ficha do personagem">
+          <div class="painel-extra-topo"><h2>Ficha do personagem</h2><button class="btn-sec" id="fechar-ficha" type="button">Fechar</button></div>
+          <div id="conteudo-ficha"><p>As informações da ficha aparecerão aqui quando disponíveis.</p></div>
+        </section>
+        <section id="painel-diario" class="painel-extra" hidden aria-label="Diário">
+          <div class="painel-extra-topo"><h2>Diário do aventureiro</h2><button class="btn-sec" id="fechar-diario" type="button">Fechar</button></div>
+          <label class="diario-toggle"><input id="diario-auto" type="checkbox"> A narradora pode registrar informações importantes automaticamente</label>
+          <div class="diario-layout">
+            <aside><label for="diario-pasta">Pasta</label><select id="diario-pasta"><option>Geral</option><option>Personagens e NPCs</option><option>Missões e pistas</option><option>Lugares</option><option>Itens</option></select><button id="diario-nova-pasta" class="btn-sec" type="button">Nova pasta</button></aside>
+            <div class="diario-editor"><label for="diario-titulo">Título</label><input id="diario-titulo" maxlength="120" placeholder="Título da anotação"><label for="diario-texto">Anotação</label><textarea id="diario-texto" rows="5" placeholder="Escreva algo para lembrar..."></textarea><div class="diario-acoes"><button id="diario-salvar" class="btn" type="button">Salvar anotação</button><button id="diario-nova" class="btn-sec" type="button">Nova anotação</button></div><div id="diario-lista"></div></div>
+          </div>
+        </section>
         <section class="historia" id="historia" aria-live="polite" aria-label="História"></section>
 
         <div class="acao">
-          <div class="opcoes" id="opcoes"></div>
+          <h2 id="pergunta-acao" class="pergunta-acao">O que você faz?</h2>
+          <div class="modos-acao" role="group" aria-label="Tipo de interação">
+            <button id="modo-acao" class="modo-acao ativo" type="button" aria-pressed="true">Ação</button>
+            <button id="modo-fala" class="modo-acao" type="button" aria-pressed="false">Falar Algo</button>
+            <button id="modo-continuar" class="modo-acao continuar" type="button">Continuar</button>
+          </div>
           <form id="form-acao" class="livre" autocomplete="off">
-            <input id="campo-acao" type="text" placeholder="Ou escreva o que você faz" aria-label="Escreva sua ação" maxlength="300">
-            <button class="btn" type="submit">Agir</button>
+            <div id="campos-acao" class="campos-interacao">
+              <input id="campo-acao" type="text" placeholder="Descreva o que você faz…" aria-label="Descreva sua ação" maxlength="600">
+            </div>
+            <button id="enviar-acao" class="btn" type="submit">Enviar ação</button>
           </form>
         </div>
       </div>

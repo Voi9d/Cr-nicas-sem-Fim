@@ -242,3 +242,57 @@
 @media (max-width: 760px) {
   .menu { padding: 2rem 1.25rem; }
 }
+/* Botões da tela Sistema */
+.sistema-opcoes .btn,
+.sistema-opcoes .btn-sec {
+    background: transparent;
+    box-shadow: none;
+    text-decoration: none;
+}
+
+/* Destaque apenas ao passar o mouse */
+.sistema-opcoes .btn:hover,
+.sistema-opcoes .btn-sec:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+/* Mantém a aparência correta do link Fantasia — Avarn */
+.sistema-opcoes a.btn,
+.sistema-opcoes a.btn:visited,
+.sistema-opcoes a.btn:hover,
+.sistema-opcoes a.btn:active {
+    color: inherit;
+    text-decoration: none;
+}
+/* Aparência padrão dos botões da tela Sistema */
+.sistema-opcoes .btn,
+.sistema-opcoes .btn-sec {
+    background: transparent;
+    color: var(--texto, #e8e0cc);
+    border: 1px solid #39445f;
+    box-shadow: none;
+    text-decoration: none;
+}
+
+/* Remove o destaque amarelo quando o botão recebe foco */
+.sistema-opcoes .btn:focus,
+.sistema-opcoes .btn-sec:focus {
+    outline: none;
+    box-shadow: none;
+    border-color: #39445f;
+}
+
+/* Destaque somente ao passar o mouse */
+.sistema-opcoes .btn:hover,
+.sistema-opcoes .btn-sec:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: #e5a52f;
+    color: #f0e7d2;
+}
+
+/* Link sem sublinhado, inclusive depois de visitado */
+.sistema-opcoes a.btn:link,
+.sistema-opcoes a.btn:visited {
+    text-decoration: none;
+    color: var(--texto, #e8e0cc);
+}

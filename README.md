@@ -154,6 +154,7 @@ A versão 0.1 do **Crônicas Sem Fim** contém as seguintes funcionalidades:
 
 - Adaptado e colocado uma API do Gemini, para cada jogador poder escolher entre utilizar da Llama como ia principal, ou uma API do Gemini.
 OBS: Você deve ter sua própria API para isso, e então colocar no .env (crie um na pasta, o .env.example apenas copie e cole no .env que você criar).
+<<<<<<< HEAD
 
 ## Criação de personagem (fantasia)
 
@@ -193,3 +194,5 @@ As antigas opções de ações sugeridas foram removidas para dar mais liberdade
 ### Objetivo desta versão
 
 A versão 0.5 amplia a experiência de interpretação livre, a consulta à ficha do personagem e a organização de informações importantes da aventura. O objetivo é aproximar o jogo de uma experiência de RPG contínua, na qual as decisões do jogador, os acontecimentos narrados e as informações descobertas possam ser acompanhados durante a jornada.
+=======
+>>>>>>> 02e5e3e14a6f6b5c1312bb9f48630ba4532a5eae
